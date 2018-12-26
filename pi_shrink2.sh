@@ -55,7 +55,7 @@ IMAGEFILE="RaspberryPi_$DATE.img"
 # Összefoglaló kiírása
 echo ""
 echo "   SD kártya: $SDCARD"
-echo "   Munka könyvtár: $WORKDIR"
+echo "   Munkakönyvtár: $WORKDIR"
 echo "   Image fájl: $IMAGEFILE"
 echo ""
 # Elmenti a kurzor pozícióját 
