@@ -9,17 +9,6 @@
 #
 # A második verziót cigam követe el.
 
-# Rendet rakó funkció.
-function cleaner
-  {
-  umount $WORKINGDIR/SRC_PART1>/dev/null 2>&1
-  umount $WORKINGDIR/SRC_PART2>/dev/null 2>&1
-  umount $LOOPDEVICE'p1'>/dev/null 2>&1
-  umount $LOOPDEVICE'p2'>/dev/null 2>&1
-  losetup -d $LOOPDEVICE>/dev/null 2>&1
-  rm -rf $WORKDIR
-   }
-
 # A script neve  
 PROGRAM="$(basename -- $0)"
 # Root joggal fut?
