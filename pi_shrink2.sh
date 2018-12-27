@@ -21,7 +21,7 @@ if [ -z "$1" ]; then
   clear
   echo "#############################################################"
   echo "#                                                           #"
-  echo "#           Raspbery PI image shrink script 2.0             #"
+  echo "#           Raspbery PI image shrink script 2.1             #"
   echo "#                                                           #"
   echo "#  Ha nem adod meg paraméterként az SD kártya eszköznevét,  #"
   echo "#  akkor alapértelmezés ként a /dev/mmcblk0 lesz használva  #"
