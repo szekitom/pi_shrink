@@ -41,7 +41,7 @@ WORKDIR="$DIR/rpi_shrink"
 DATE=`date +%Y-%m-%d`
 # Az image fájl neve
 IMAGEFILE="RaspberryPi_$DATE.img"
-# Összefoglaló kiírása
+# Összefoglaló kiírása
 echo ""
 echo "   SD kártya: $SDCARD"
 echo "   Munkakönyvtár: $WORKDIR"
@@ -90,7 +90,7 @@ cd ..
 [ -f $IMAGEFILE ] && rm -f $IMAGEFILE
 dd if=/dev/zero of=$IMAGEFILE bs=1 count=0 seek=${DEST_IMAGE_SIZE_KBYTE%%.*}'K'>/dev/null 2>&1
 #megnézzük hol ér véget az első partíció, hogy azt követően indulhasson a második
-SRC_PART1_END=`fdisk -l $SDCARD | grep $SDCARD'p1' | awk '{print $3}'`
+SRC_PART1_END=`fdisk -l $SDCARD | grep $SDCARD'p1' | awk '{print $4}'`
 #partíciók létrehozása az image fájlban, boot flag, Fat32 LBA típus az első partíciónak
 # Az első partíció létrehozása az image fájlon 
 (echo n; echo p; echo 1; echo; echo $SRC_PART1_END; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
@@ -113,9 +113,9 @@ mount $LOOPDEVICE'p1' $WORKDIR/DST_PART1
 mount $LOOPDEVICE'p2' $WORKDIR/DST_PART2
 # Indul a szinkronizáció
 echo "   A 'boot' partíció másolása"
-rsync -ah --info=progress2 $WORKDIR/SRC_PART1/ $WORKDIR/DST_PART1/
+rsync -ah --info=progress2 $WORKDIR/SRC_PART1/ $WORKDIR/DST_PART1/ | tr '\r' '\n' | sed --unbuffered 's/ (.*)//' | tr '\n' '\r' ; echo
 echo "   A 'root' partíció másolása"
-rsync -ah --info=progress2 --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/
+rsync -ah --info=progress2 --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/ | tr '\r' '\n' | sed --unbuffered 's/ (.*)//' | tr '\n' '\r' ; echo
 echo "   A munkakönyvtárak törlése."
 echo ""
 # kitakarít maga után
