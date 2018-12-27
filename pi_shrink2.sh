@@ -129,9 +129,9 @@ mount $LOOPDEVICE'p1' $WORKDIR/DST_PART1
 mount $LOOPDEVICE'p2' $WORKDIR/DST_PART2
 # Indul a szinkronizáció
 echo "   A 'boot' partíció másolása"
-rsync -ah --info=progress2 $WORKDIR/SRC_PART1 $WORKDIR/DST_PART1
+rsync -ah --info=progress2 $WORKDIR/SRC_PART1/ $WORKDIR/DST_PART1/
 echo "   A 'root' partíció másolása"
-rsync -ah --info=progress2 $WORKDIR/SRC_PART2 $WORKDIR/DST_PART2
+rsync -ah --info=progress2 $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/
 echo "   A munkakönyvtárak törlése."
 echo ""
 # kitakarít maga után
