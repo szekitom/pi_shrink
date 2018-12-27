@@ -84,15 +84,6 @@ DEST_PART2_MINIMUM_KBYTE=`df $WORKDIR/SRC_PART2 | tail -1 | awk '{print $3}'`
 DEST_IMAGE_SIZE_KBYTE=$((DEST_PART1_MINIMUM_KBYTE + DEST_PART2_MINIMUM_KBYTE + 524288))
 # Átváltjuk MB-ra, és a +1-el felfelé konvertáljuk
 DEST_IMAGE_SIZE_MBYTE=$((DEST_IMAGE_SIZE_KBYTE /1024 + 1))
-
-#IMG fájl áttekintő
-#echo ""
-#echo "A 'boot' partició teljes mérete: ${SRC_PART1_MAX//+([[:space:]])/}B ebből használt: ${SRC_PART1_USED//+([[:space:]])/}B, a fájlrendszere: $SRC_PART1_TYPE "
-#echo "A 'root' partició teljes mérete: ${SRC_PART2_MAX//+([[:space:]])/}B ebből használt: ${SRC_PART2_USED//+([[:space:]])/}B fájlrendszere: $SRC_PART2_TYPE "
-#echo ""
-#echo "Az image fájl mérete ${DEST_IMAGE_SIZE_MBYTE//+([[:space:]])/}MB lesz."
-#echo ""
-
 # kilép a munkakönyvtárból, és a script mellé készül az image fájl
 cd ..
 # Az image fájl létrehozása elött törli a régit, és loop eszközként csatolása
@@ -107,6 +98,10 @@ SRC_PART1_END=`fdisk -l $SDCARD | grep $SDCARD'p1' | awk '{print $3}'`
 (echo n; echo p; echo 2; echo; echo; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
 # Beállítja az 1. partíció fájlrendszerét és a bootable flag-et
 (echo a; echo 1; echo t; echo 1; echo c; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
+# Az SD kártya UUID-jának klónozása
+PARTID=`blkid -o export /dev/mmcblk0p1  | tail -1 | tr -d PARTUUID=`
+PARTID=${PARTID:0:8}
+(echo x; echo i; echo 0x$PARTID; echo r; echo p; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
 # loop eszköz rögzítése a kimenetről
 LOOPDEVICE=`losetup -f --show $IMAGEFILE`
 # A partíciók fájlrendszerének kialakítása
@@ -120,7 +115,7 @@ mount $LOOPDEVICE'p2' $WORKDIR/DST_PART2
 echo "   A 'boot' partíció másolása"
 rsync -ah --info=progress2 $WORKDIR/SRC_PART1/ $WORKDIR/DST_PART1/
 echo "   A 'root' partíció másolása"
-rsync -ah --info=progress2 $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/
+rsync -ah --info=progress2 --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/
 echo "   A munkakönyvtárak törlése."
 echo ""
 # kitakarít maga után
