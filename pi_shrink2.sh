@@ -99,8 +99,8 @@ SRC_PART1_END=`fdisk -l $SDCARD | grep $SDCARD'p1' | awk '{print $4}'`
 # Beállítja az 1. partíció fájlrendszerét és a bootable flag-et
 (echo a; echo 1; echo t; echo 1; echo c; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
 # Az SD kártya UUID-jának klónozása
-PARTID=`blkid -o export /dev/mmcblk0p1  | tail -1 | tr -d PARTUUID=`
-PARTID=${PARTID:0:8}
+PARTID=$(blkid -o value -s PARTUUID /dev/mmcblk0p1)
+PARTID=${PARTID%-*}
 (echo x; echo i; echo 0x$PARTID; echo r; echo p; echo w) | fdisk -c $IMAGEFILE>/dev/null 2>&1
 # loop eszköz rögzítése a kimenetről
 LOOPDEVICE=`losetup -f --show $IMAGEFILE`
@@ -125,4 +125,7 @@ losetup -d $LOOPDEVICE
 umount $SDCARD'p1'
 umount $SDCARD'p2'
 rm -rf $WORKDIR
+# Ne a root legyen a tulajdonos, és mások is hozzáférjenek az image fájlhoz
+chown pi:pi $IMAGEFILE
+chmod 755 $IMAGEFILE
 exit 0
