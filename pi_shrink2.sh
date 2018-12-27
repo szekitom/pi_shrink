@@ -70,9 +70,7 @@ if [ "$resp" = "n" ] || [ "$resp" = "nem" ]; then
 fi
 
 # Létezik a munka könyvtár? Ha igen, akkor töröljük.
-if [ -d $WORKDIR ]; then
-  rm -rf $WORKDIR
-fi
+[ -d $WORKDIR ] && rm -rf $WORKDIR
 # A munkakönyvtár létrehozása
 # Az elmentett pozícióba írja ki a szöveget.
 echo -e "\E8   A munkakönyvtárak létrehozása.    "
