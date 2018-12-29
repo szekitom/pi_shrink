@@ -9,6 +9,21 @@
 #
 # A második verziót cigam követe el.
 
+# Bármi baj történik, (0 vagy éppen nem)
+trap cleanup 0 1 2 3 6
+
+cleanup()
+{
+# kitakarít maga után
+echo "   A munkakönyvtárak törlése."
+umount $LOOPDEVICE'p1'>/dev/null 2>&1
+umount $LOOPDEVICE'p2'>/dev/null 2>&1
+losetup -d $LOOPDEVICE>/dev/null 2>&1
+umount $SDCARD'p1'>/dev/null 2>&1
+umount $SDCARD'p2'>/dev/null 2>&1
+rm -rf $WORKDIR>/dev/null 2>&1
+}
+
 # A script neve  
 PROGRAM="$(basename -- $0)"
 # Root joggal fut?
@@ -21,7 +36,7 @@ if [ -z "$1" ]; then
   clear
   echo "#############################################################"
   echo "#                                                           #"
-  echo "#           Raspbery PI image shrink script 2.1             #"
+  echo "#           Raspbery PI image shrink script 2.2             #"
   echo "#                                                           #"
   echo "#  Ha nem adod meg paraméterként az SD kártya eszköznevét,  #"
   echo "#  akkor alapértelmezés ként a /dev/mmcblk0 lesz használva  #"
@@ -105,27 +120,24 @@ PARTID=${PARTID%-*}
 # loop eszköz rögzítése a kimenetről
 LOOPDEVICE=`losetup -f --show $IMAGEFILE`
 # A partíciók fájlrendszerének kialakítása
+# Újraolvassa a loop eszköz partíciókiosztását.
 partx -u $LOOPDEVICE
-mkfs.vfat -F 32 -I $LOOPDEVICE'p1'>/dev/null 2>&1
-mkfs.ext4 $LOOPDEVICE'p2'>/dev/null 2>&1
+# Az első artíció cimkéje
+PARTLABEL1=$(ls -l /dev/disk/by-label | grep mmcblk0p1 | awk '{print $9}')
+mkfs.vfat -F 32 -I -n $PARTLABEL1 $LOOPDEVICE'p1'>/dev/null 2>&1
+# A 2. partíció cimkéje
+PARTLABEL2=$(ls -l /dev/disk/by-label | grep mmcblk0p2 | awk '{print $9}')
+mkfs.ext4 -L $PARTLABEL2 $LOOPDEVICE'p2'>/dev/null 2>&1
 #csatoljuk a loop eszközt a másoláshoz
 mount $LOOPDEVICE'p1' $WORKDIR/DST_PART1
 mount $LOOPDEVICE'p2' $WORKDIR/DST_PART2
 # Indul a szinkronizáció
-echo "   A 'boot' partíció másolása"
+echo "   A '$PARTLABEL1' partíció másolása"
 rsync -ah --info=progress2 $WORKDIR/SRC_PART1/ $WORKDIR/DST_PART1/ | tr '\r' '\n' | sed --unbuffered 's/ (.*)//' | tr '\n' '\r' ; echo
-echo "   A 'root' partíció másolása"
+echo "   A '$PARTLABEL2' partíció másolása"
 rsync -ah --info=progress2 --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/mnt/*","/media/*","/lost+found"} $WORKDIR/SRC_PART2/ $WORKDIR/DST_PART2/ | tr '\r' '\n' | sed --unbuffered 's/ (.*)//' | tr '\n' '\r' ; echo
-echo "   A munkakönyvtárak törlése."
-echo ""
-# kitakarít maga után
-umount $LOOPDEVICE'p1'
-umount $LOOPDEVICE'p2'
-losetup -d $LOOPDEVICE
-umount $SDCARD'p1'
-umount $SDCARD'p2'
-rm -rf $WORKDIR
 # Ne a root legyen a tulajdonos, és mások is hozzáférjenek az image fájlhoz
 chown pi:pi $IMAGEFILE
 chmod 755 $IMAGEFILE
 exit 0
+
