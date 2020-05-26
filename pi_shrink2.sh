@@ -87,16 +87,14 @@ mkdir SRC_PART1 SRC_PART2 DST_PART1 DST_PART2
 mount $SDCARD'p1' SRC_PART1
 mount $SDCARD'p2' SRC_PART2
 # A forrás partíciók adatainak beolvasása
-SRC_PART1_MAX=`df -h $WORKDIR/SRC_PART1 | tail -1 | awk '{print $2}'`
-SRC_PART1_USED=`df -h $WORKDIR/SRC_PART1 | tail -1 | awk '{print $3}'`
+SRC_PART1_MAX=`df $WORKDIR/SRC_PART1 | tail -1 | awk '{print $2}'`
+SRC_PART1_USED=`df $WORKDIR/SRC_PART1 | tail -1 | awk '{print $3}'`
 SRC_PART1_TYPE=`parted $SDCARD -ms p \ | grep "^1" | cut -f 5 -d:`
-SRC_PART2_MAX=`df -h $WORKDIR/SRC_PART2 | tail -1 | awk '{print $2}'`
-SRC_PART2_USED=`df -h $WORKDIR/SRC_PART2 | tail -1 | awk '{print $3}'`
+SRC_PART2_MAX=`df $WORKDIR/SRC_PART2 | tail -1 | awk '{print $2}'`
+SRC_PART2_USED=`df $WORKDIR/SRC_PART2 | tail -1 | awk '{print $3}'`
 SRC_PART2_TYPE=`parted $SDCARD -ms p \ | grep "^2" | cut -f 5 -d:`
-# Az image fájl méretének kiszámítása (p1 max + p2 min + 1GB)
-DEST_PART1_MINIMUM_KBYTE=`df $WORKDIR/SRC_PART1 | tail -1 | awk '{print $2}'`
-DEST_PART2_MINIMUM_KBYTE=`df $WORKDIR/SRC_PART2 | tail -1 | awk '{print $3}'`
-DEST_IMAGE_SIZE_KBYTE=$((DEST_PART1_MINIMUM_KBYTE + DEST_PART2_MINIMUM_KBYTE + 1048576))
+# Az image fájl méretének kiszámítása (p1 max + p2 min + 1000MB)
+DEST_IMAGE_SIZE_KBYTE=$((SRC_PART1_MAX + SRC_PART2_USED + 1048576))
 # Átváltjuk MB-ra, és a +1-el felfelé konvertáljuk
 DEST_IMAGE_SIZE_MBYTE=$((DEST_IMAGE_SIZE_KBYTE /1024 + 1))
 # kilép a munkakönyvtárból, és a script mellé készül az image fájl
